@@ -1,23 +1,36 @@
 import React from 'react';
+import { client } from '../lib/client';
 import { Product, FooterBanner, HeroBanner } from '../components/index';
 
-const Home = () => {
-  return (
-    <>
-      <HeroBanner />
+// Instead of using useEffect, there is something called getServerSideProps in NextJS which helps in the server side rendering.
 
-      <div className='products-heading'>
-        <h2>Best Selling Products</h2>
-        <p>Speakers of Many Variations</p>
-      </div>
+const Home = ({ products, bannerData }) => (
+  <>
+    <HeroBanner heroBanner = {bannerData.length && bannerData[0]} />
 
-      <div className='products-container'>
-        {['Product1', 'Product 2'].map((product) => product)}
-      </div>
+    <div className='products-heading'>
+      <h2>Best Selling Products</h2>
+      <p>Speakers of Many Variations</p>
+    </div>
 
-      <FooterBanner />
-    </>
-  )
+    <div className='products-container'>
+      {products?.map((product) => product.name)}
+    </div>
+
+    <FooterBanner />
+  </>
+);
+
+export const getServerSideProps = async () => {
+  const query = '*[_type == "product"]' //Here the * means to grab all the items from the collection type product which we made in sanity
+  const products = await client.fetch(query);
+
+  const Bannerquery = '*[_type == "banner"]' //Here the * means to grab all the items from the collection type Banner which we made in sanity
+  const bannerData = await client.fetch(Bannerquery);
+
+  return {
+    props: { products, bannerData }
+  }
 }
 
 export default Home;
